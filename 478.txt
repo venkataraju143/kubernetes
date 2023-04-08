@@ -1,0 +1,92 @@
+# Kubeadm installation gude step by step
+
+# For ubuntu v22
+
+# Become root user to execute the following instruction 
+
+# to become a root user...use this command...$ sudo -i
+
+# Update the ubuntu system
+
+sudo apt-get update
+
+# Installatio of Docker
+
+curl https://get.docker.com/ | bash
+
+sudo apt-get update
+
+# Install GO Language
+
+wget https://storage.googleapis.com/golang/getgo/installer_linux
+
+chmod +x ./installer_linux
+
+./installer_linux
+
+source ~/.bash_profile
+
+# update the system
+sudo apt-get update
+
+# Download cri-containerd. It works as container runtime interface
+
+git clone https://github.com/Mirantis/cri-dockerd.git
+
+# Install cri-dockerd using the following commands
+
+cd cri-dockerd
+mkdir bin
+
+go build -o bin/cri-dockerd
+
+mkdir -p /usr/local/bin
+
+install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+
+cp -a packaging/systemd/* /etc/systemd/system
+
+sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+
+systemctl daemon-reload
+
+systemctl enable cri-docker.service
+
+systemctl enable --now cri-docker.socket
+
+systemctl start cri-docker.service
+
+systemctl start --now cri-docker.socket
+
+
+# come to root user home directory
+
+cd ~
+
+# Update the system
+
+sudo apt-get update
+
+# Now install Kubernetes
+
+sudo apt-get update
+
+sudo apt-get install -y apt-transport-https ca-certificates curl
+
+sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+
+sudo apt-get update
+
+sudo apt-get install -y kubelet kubeadm kubectl
+
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# use the below command to initialize your cluster 
+
+# kubeadm init --pod-network-cidr=10.244.0.0/16 --cri-socket=unix:///var/run/cri-dockerd.sock 
+
+
+
